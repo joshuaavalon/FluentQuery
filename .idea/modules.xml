@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/FluentQuery.iml" filepath="$PROJECT_DIR$/FluentQuery.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/fluent-query/app.iml" filepath="$PROJECT_DIR$/fluent-query/app.iml" />
     </modules>
   </component>
 </project>
