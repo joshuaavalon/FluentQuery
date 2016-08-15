@@ -35,6 +35,9 @@ public class Condition implements Expressible {
 	@NonNull
 	@Override
 	public String toExpression() {
+		if(operator.isPresent() && operator.get() == Operators.NOT)
+			return String.format("(%s(%s))", property.toExpression(), operator.isPresent() ? operator
+					.get().getSymbol() : "");
 		final String valueStr = value.isPresent() ? ((value.get() instanceof Condition) ? value
 				.get().toExpression() : "?") : "";
 		return String.format("(%s%s%s)", property.toExpression(), operator.isPresent() ? operator
@@ -119,6 +122,11 @@ public class Condition implements Expressible {
 	}
 
 	@NonNull
+	public Condition not() {
+		return set(Operators.NOT, null);
+	}
+
+	@NonNull
 	public Condition and(@NonNull final Condition condition) {
 		return combine(Operators.AND, condition);
 	}
@@ -166,7 +174,8 @@ public class Condition implements Expressible {
 		IS_NULL(" IS NULL "),
 		IS_NOT_NULL(" IS NOT NULL "),
 		AND(" AND "),
-		OR(" OR ");
+		OR(" OR "),
+		NOT(" NOT ");
 
 		@NonNull
 		private final String symbol;
