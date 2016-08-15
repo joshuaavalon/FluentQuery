@@ -69,8 +69,18 @@ public class Condition implements Expressible {
 	}
 
 	@NonNull
+	public Condition greaterThanOrEqual(@NonNull final String argument) {
+		return set(Operators.GREATER_THAN_OR_EQUAL, argument);
+	}
+
+	@NonNull
 	public Condition lesserThan(@NonNull final String argument) {
 		return set(Operators.LESSER_THAN, argument);
+	}
+
+	@NonNull
+	public Condition lesserThanOrEqual(@NonNull final String argument) {
+		return set(Operators.LESSER_THAN_OR_EQUAL, argument);
 	}
 
 	@NonNull
@@ -80,12 +90,22 @@ public class Condition implements Expressible {
 
 	@NonNull
 	public Condition like(@NonNull final String argument) {
-		return set(Operators.LIKE, "%" + argument + "%");
+		return like(argument, true);
+	}
+
+	@NonNull
+	public Condition like(@NonNull final String argument, final boolean wildcard) {
+		return set(Operators.LIKE, wildcard ? wildcardString(argument) : argument);
 	}
 
 	@NonNull
 	public Condition notLike(@NonNull final String argument) {
-		return set(Operators.NOT_LIKE, "%" + argument + "%");
+		return notLike(argument, true);
+	}
+
+	@NonNull
+	public Condition notLike(@NonNull final String argument, final boolean wildcard) {
+		return set(Operators.NOT_LIKE, wildcard ? wildcardString(argument) : argument);
 	}
 
 	@NonNull
@@ -129,10 +149,17 @@ public class Condition implements Expressible {
 				.orNull()).add("value", value.orNull()).toString();
 	}
 
+	@NonNull
+	private static String wildcardString(@NonNull final String str) {
+		return "%" + str + "%";
+	}
+
 	private enum Operators implements Operator {
 		EQUALS(" = "),
 		GREATER_THAN(" > "),
 		LESSER_THAN(" < "),
+		GREATER_THAN_OR_EQUAL(" >= "),
+		LESSER_THAN_OR_EQUAL(" <= "),
 		NOT_EQUALS(" != "),
 		LIKE(" LIKE "),
 		NOT_LIKE(" NOT LIKE "),
