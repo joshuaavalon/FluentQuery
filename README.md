@@ -10,7 +10,7 @@ String having, String orderBy, String limit)
 **Fluent Query** provides an easier way to create query with less room for error.
 
 ##Install
-```
+```Gradle
 compile 'com.joshuaavalon:fluent-query:1.0.0'
 ```
 
