@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Table implements Clause {
+public class Table{
 	@NonNull
 	private final String table;
 	@NonNull
@@ -45,16 +45,15 @@ public class Table implements Clause {
 	}
 
 	@NonNull
-	@Override
-	public String toClause() {
+	String getFullExpression() {
 		final StringBuilder stringBuilder = new StringBuilder(table);
 		for (JoinClause clause : joins) {
-			stringBuilder.append(clause.toClause());
+			stringBuilder.append(clause.getFullExpression());
 		}
 		return stringBuilder.toString();
 	}
 
-	private enum Join implements Operator {
+	private enum Join {
 		INNER_JOIN(" INNER JOIN "),
 		LEFT_JOIN(" LEFT JOIN "),
 		RIGHT_JOIN(" RIGHT JOIN "),
@@ -68,13 +67,12 @@ public class Table implements Clause {
 		}
 
 		@NonNull
-		@Override
 		public String getSymbol() {
 			return symbol;
 		}
 	}
 
-	private static class JoinClause implements Clause {
+	private static class JoinClause {
 		@NonNull
 		private final Join join;
 		@NonNull
@@ -89,24 +87,23 @@ public class Table implements Clause {
 		}
 
 		@NonNull
-		public Join getJoin() {
+		Join getJoin() {
 			return join;
 		}
 
 		@NonNull
-		public String getRightTable() {
+		String getRightTable() {
 			return rightTable;
 		}
 
 		@NonNull
-		public Condition getCondition() {
+		Condition getCondition() {
 			return condition;
 		}
 
 		@NonNull
-		@Override
-		public String toClause() {
-			return String.format("%s%s ON %s", join.getSymbol(), rightTable, condition.toClause());
+		String getFullExpression() {
+			return String.format("%s%s ON %s", join.getSymbol(), rightTable, condition.getFullExpression());
 		}
 	}
 }

@@ -19,9 +19,9 @@ import java.util.List;
 
 public class Query {
 	@NonNull
-	private List<String> columns;
+	private final List<String> columns;
 	@NonNull
-	private Table table;
+	private final Table table;
 	@NonNull
 	private Optional<Condition> condition;
 	@NonNull
@@ -36,9 +36,9 @@ public class Query {
 	private int offset;
 	private boolean distinct;
 
-	private Query() {
-		columns = new ArrayList<>();
-		table = Table.from("");
+	Query(@NonNull final List<String> columns, @NonNull final Table table) {
+		this.columns = columns;
+		this.table = table;
 		condition = Optional.absent();
 		groupBy = new ArrayList<>();
 		having = Optional.absent();
@@ -48,29 +48,13 @@ public class Query {
 	}
 
 	@NonNull
-	public static Query select(@NonNull final String... columns) {
-		final Query query = new Query();
-		query.columns = Arrays.asList(columns);
-		return query;
+	public static Column select(@NonNull final String... columns) {
+		return new Column(Arrays.asList(columns));
 	}
 
 	@NonNull
-	public static Query select(@NonNull final List<String> columns) {
-		final Query query = new Query();
-		query.columns = columns;
-		return query;
-	}
-
-	@NonNull
-	public Query from(@NonNull final String table) {
-		this.table = new Table(table);
-		return this;
-	}
-
-	@NonNull
-	public Query from(@NonNull final Table table) {
-		this.table = table;
-		return this;
+	public static Column select(@NonNull final List<String> columns) {
+		return new Column(new ArrayList<>(columns));
 	}
 
 	@NonNull
@@ -93,7 +77,7 @@ public class Query {
 
 	@NonNull
 	public Query groupBy(@NonNull final List<String> columns) {
-		this.groupBy = columns;
+		this.groupBy = new ArrayList<>(columns);
 		return this;
 	}
 
@@ -105,7 +89,7 @@ public class Query {
 
 	@NonNull
 	public Query orderBy(@NonNull final List<Order> columns) {
-		this.sortOrder = columns;
+		this.sortOrder = new ArrayList<>(columns);
 		return this;
 	}
 
@@ -138,26 +122,26 @@ public class Query {
 	public Cursor commit(@NonNull final SQLiteDatabase db) {
 		final String[] columns = this.columns.size() != 0 ?
 				Iterables.toArray(this.columns, String.class) : new String[]{"*"};
-		final String selection = condition.isPresent() ? condition.get().toExpression() : null;
+		final String selection = condition.isPresent() ? condition.get().getExpression() : null;
 		final String[] selectionArgs = condition.isPresent() ?
 				Iterables.toArray(condition.get().getArguments(), String.class) : null;
 		final Iterable<String> orderByClauses = Iterables.transform(sortOrder, new Function<Order,
 				String>() {
 			@Override
 			public String apply(Order input) {
-				return input.toClause();
+				return input.getFullExpression();
 			}
 		});
 		final String orderBy = Joiner.on(", ").join(orderByClauses);
 		final String limitClause = limit == 0 ? null : (offset == 0 ? String.valueOf(limit) :
 				limit + "," + offset);
 		return db.query(distinct,
-				table.toClause(),
+				table.getFullExpression(),
 				columns,
 				selection,
 				selectionArgs,
 				Joiner.on(", ").join(groupBy),
-				having.isPresent() ? having.get().toClause() : null,
+				having.isPresent() ? having.get().getFullExpression() : null,
 				orderBy,
 				limitClause);
 	}
@@ -166,7 +150,7 @@ public class Query {
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
 				.add("columns", columns.toString())
-				.add("table", table.toClause())
+				.add("table", table.getFullExpression())
 				.add("condition", condition.toString())
 				.add("groupBy", groupBy.toString())
 				.add("having", having.toString())

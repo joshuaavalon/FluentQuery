@@ -1,178 +1,87 @@
 package com.joshuaavalon.fluentquery;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class Condition implements Expressible {
+public class Condition {
 	@NonNull
-	private final Expressible property;
-	@NonNull
-	private Optional<? extends Expressible> value;
-	@NonNull
-	private Optional<? extends Operator> operator;
+	private final String expression;
 
-	public Condition(@NonNull final String property) {
-		this(Value.property(property));
+	@NonNull
+	private final List<String> arguments;
+
+	Condition(@NonNull final String expression, @NonNull final String... arguments) {
+		this.expression = expression;
+		this.arguments = Arrays.asList(arguments);
 	}
 
-	private Condition(@NonNull final Expressible property) {
-		this.property = property;
-		value = Optional.absent();
-		operator = Optional.absent();
-	}
-
-	@NonNull
-	public static Condition property(@NonNull final String property) {
-		return new Condition(property);
+	Condition(@NonNull final String expression, @NonNull final List<String> arguments) {
+		this.expression = expression;
+		this.arguments = new ArrayList<>(arguments);
 	}
 
 	@NonNull
-	@Override
-	public String toExpression() {
-		if(operator.isPresent() && operator.get() == Operators.NOT)
-			return String.format("(%s(%s))", property.toExpression(), operator.isPresent() ? operator
-					.get().getSymbol() : "");
-		final String valueStr = value.isPresent() ? ((value.get() instanceof Condition) ? value
-				.get().toExpression() : "?") : "";
-		return String.format("(%s%s%s)", property.toExpression(), operator.isPresent() ? operator
-				.get().getSymbol() : "", valueStr);
+	public static Property property(@NonNull final String name) {
+		return new Property(name);
 	}
 
 	@NonNull
-	@Override
-	public String toClause() {
-		final String valueStr = value.isPresent() ? value.get().toExpression() : "";
-		return String.format("(%s%s%s)", property.toExpression(), operator.isPresent() ? operator
-				.get().getSymbol() : "", valueStr);
+	String getExpression() {
+		return expression;
+	}
+
+
+	@NonNull
+	String getFullExpression() {
+		return String.format(expression.replaceAll("\\?", "%s"), arguments);
 	}
 
 	@NonNull
-	@Override
-	public List<String> getArguments() {
-		List<String> args = new ArrayList<>();
-		args.addAll(property.getArguments());
-		if (value.isPresent()) args.addAll(value.get().getArguments());
-		return args;
-	}
-
-	@NonNull
-	public Condition equal(@NonNull final String argument) {
-		return set(Operators.EQUALS, argument);
-	}
-
-	@NonNull
-	public Condition greaterThan(@NonNull final String argument) {
-		return set(Operators.GREATER_THAN, argument);
-	}
-
-	@NonNull
-	public Condition greaterThanOrEqual(@NonNull final String argument) {
-		return set(Operators.GREATER_THAN_OR_EQUAL, argument);
-	}
-
-	@NonNull
-	public Condition lesserThan(@NonNull final String argument) {
-		return set(Operators.LESSER_THAN, argument);
-	}
-
-	@NonNull
-	public Condition lesserThanOrEqual(@NonNull final String argument) {
-		return set(Operators.LESSER_THAN_OR_EQUAL, argument);
-	}
-
-	@NonNull
-	public Condition notEqual(@NonNull final String argument) {
-		return set(Operators.NOT_EQUALS, argument);
-	}
-
-	@NonNull
-	public Condition like(@NonNull final String argument) {
-		return like(argument, true);
-	}
-
-	@NonNull
-	public Condition like(@NonNull final String argument, final boolean wildcard) {
-		return set(Operators.LIKE, wildcard ? wildcardString(argument) : argument);
-	}
-
-	@NonNull
-	public Condition notLike(@NonNull final String argument) {
-		return notLike(argument, true);
-	}
-
-	@NonNull
-	public Condition notLike(@NonNull final String argument, final boolean wildcard) {
-		return set(Operators.NOT_LIKE, wildcard ? wildcardString(argument) : argument);
-	}
-
-	@NonNull
-	public Condition isNull() {
-		return set(Operators.IS_NULL, null);
-	}
-
-	@NonNull
-	public Condition isNotNull() {
-		return set(Operators.IS_NOT_NULL, null);
-	}
-
-	@NonNull
-	public Condition not() {
-		return set(Operators.NOT, null);
+	List<String> getArguments() {
+		return arguments;
 	}
 
 	@NonNull
 	public Condition and(@NonNull final Condition condition) {
-		return combine(Operators.AND, condition);
+		return combine(DefaultOperators.AND, condition);
 	}
 
 	@NonNull
 	public Condition or(@NonNull final Condition condition) {
-		return combine(Operators.OR, condition);
+		return combine(DefaultOperators.OR, condition);
 	}
 
 	@NonNull
-	private Condition combine(@NonNull final Operator op, @NonNull final Condition condition) {
-		final Condition result = new Condition(this);
-		result.operator = Optional.of(op);
-		result.value = Optional.of(condition);
-		return result;
+	public Condition not() {
+		return new Condition(DefaultOperators.NOT.getSymbol() + Utility.bracketString(expression),
+				arguments);
 	}
 
 	@NonNull
-	private Condition set(@NonNull final Operator op, @Nullable final String argument) {
-		operator = Optional.of(op);
-		value = Optional.fromNullable(argument == null ? null : Value.argument(argument));
-		return this;
+	private Condition combine(@NonNull final DefaultOperators operator,
+							  @NonNull final Condition condition) {
+		final String newExpression = Utility.bracketString(expression) +
+				operator.getSymbol() +
+				Utility.bracketString(expression);
+		final List<String> newArguments = new ArrayList<>(arguments);
+		newArguments.addAll(condition.arguments);
+		return new Condition(newExpression, newArguments);
 	}
 
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper(this).add("property", property).add("operator", operator
-				.orNull()).add("value", value.orNull()).toString();
+		return MoreObjects.toStringHelper(this)
+				.add("expression", expression)
+				.add("arguments", arguments)
+				.toString();
 	}
 
-	@NonNull
-	private static String wildcardString(@NonNull final String str) {
-		return "%" + str + "%";
-	}
-
-	private enum Operators implements Operator {
-		EQUALS(" = "),
-		GREATER_THAN(" > "),
-		LESSER_THAN(" < "),
-		GREATER_THAN_OR_EQUAL(" >= "),
-		LESSER_THAN_OR_EQUAL(" <= "),
-		NOT_EQUALS(" != "),
-		LIKE(" LIKE "),
-		NOT_LIKE(" NOT LIKE "),
-		IS_NULL(" IS NULL "),
-		IS_NOT_NULL(" IS NOT NULL "),
+	private enum DefaultOperators {
 		AND(" AND "),
 		OR(" OR "),
 		NOT(" NOT ");
@@ -180,68 +89,13 @@ public class Condition implements Expressible {
 		@NonNull
 		private final String symbol;
 
-		Operators(@NonNull final String symbol) {
+		DefaultOperators(@NonNull final String symbol) {
 			this.symbol = symbol;
 		}
 
 		@NonNull
-		@Override
 		public String getSymbol() {
 			return symbol;
-		}
-	}
-
-	private static class Value implements Expressible {
-		@NonNull
-		private Optional<String> property;
-		@NonNull
-		private Optional<String> argument;
-
-		private Value() {
-			property = Optional.absent();
-			argument = Optional.absent();
-		}
-
-		@NonNull
-		public static Value property(@NonNull final String property) {
-			final Value value = new Value();
-			value.property = Optional.of(property);
-			return value;
-		}
-
-		@NonNull
-		public static Value argument(@NonNull final String argument) {
-			final Value value = new Value();
-			value.argument = Optional.of(argument);
-			return value;
-		}
-
-		@NonNull
-		@Override
-		public String toExpression() {
-			return property.or("");
-		}
-
-		@NonNull
-		@Override
-		public String toClause() {
-			return property.or(argument).or("");
-		}
-
-		@NonNull
-		@Override
-		public List<String> getArguments() {
-			List<String> args = new ArrayList<>();
-			if (argument.isPresent()) args.add(argument.get());
-			return args;
-		}
-
-		@Override
-		public String toString() {
-			return MoreObjects.toStringHelper(this)
-					.add("property", property)
-					.add("argument", argument.orNull())
-					.toString();
 		}
 	}
 }

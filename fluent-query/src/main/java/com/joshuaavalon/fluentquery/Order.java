@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.google.common.base.MoreObjects;
 
-public class Order implements Clause {
+public class Order {
 	@NonNull
 	private final String column;
 	@NonNull
@@ -26,8 +26,7 @@ public class Order implements Clause {
 	}
 
 	@NonNull
-	@Override
-	public String toClause() {
+	String getFullExpression() {
 		return String.format("%s %s", column, ordering.name());
 	}
 
