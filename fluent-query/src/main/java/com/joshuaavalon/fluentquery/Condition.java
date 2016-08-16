@@ -66,7 +66,7 @@ public class Condition {
 							  @NonNull final Condition condition) {
 		final String newExpression = Utility.bracketString(expression) +
 				operator.getSymbol() +
-				Utility.bracketString(expression);
+				Utility.bracketString(condition.expression);
 		final List<String> newArguments = new ArrayList<>(arguments);
 		newArguments.addAll(condition.arguments);
 		return new Condition(newExpression, newArguments);
