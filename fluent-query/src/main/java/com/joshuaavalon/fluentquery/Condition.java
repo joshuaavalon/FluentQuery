@@ -35,7 +35,6 @@ public class Condition {
 		return expression;
 	}
 
-
 	@NonNull
 	String getFullExpression() {
 		return String.format(expression.replaceAll("\\?", "%s"), arguments);

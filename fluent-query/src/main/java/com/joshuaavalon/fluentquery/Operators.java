@@ -68,9 +68,6 @@ class Operators {
 		NOT_LIKE(" NOT LIKE "),
 		IS_NULL(" IS NULL "),
 		IS_NOT_NULL(" IS NOT NULL ");
-		//AND(" AND "),
-		//OR(" OR "),
-		//NOT(" NOT ");
 
 		@NonNull
 		private final String symbol;

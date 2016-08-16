@@ -18,7 +18,6 @@ abstract class Operator {
 		this.arguments = Arrays.asList(arguments);
 	}
 
-
 	protected Operator(@NonNull final String expression, @NonNull final List<String> arguments) {
 		this.expression = expression;
 		this.arguments = new ArrayList<>(arguments);
