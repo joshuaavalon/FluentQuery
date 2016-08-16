@@ -1,4 +1,6 @@
 #Fluent Query
+[ ![Download](https://api.bintray.com/packages/joshuaavalon/maven/fluent-query/images/download.svg) ](https://bintray.com/joshuaavalon/maven/fluent-query/_latestVersion)
+
 A fluent interface for building query in Android.
 
 ##Background
@@ -11,7 +13,7 @@ String having, String orderBy, String limit)
 
 ##Install
 ```Gradle
-compile 'com.joshuaavalon:fluent-query:1.0.0'
+compile 'com.joshuaavalon:fluent-query:1.1.0'
 ```
 
 ##Usage
