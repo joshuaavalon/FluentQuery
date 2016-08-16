@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 //apply from: 'push.gradle'
 
-version = "1.0.0"
+version = "1.1.0"
 
 android {
     compileSdkVersion 24
@@ -10,7 +10,7 @@ android {
     defaultConfig {
         minSdkVersion 7
         targetSdkVersion 24
-        versionCode 1
+        versionCode 2
         versionName version
     }
     buildTypes {
